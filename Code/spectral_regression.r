@@ -19,7 +19,8 @@
 # Step 1: Import libraries
 package.list <- c("dplyr",
                   "ggplot2",
-                  "GGally"
+                  "GGally",
+                  "caret"
                   )
 packageLoad <- function(packages){
   for (i in packages) {
@@ -55,8 +56,35 @@ packageLoad(package.list)
 # Step 6: Model goodness of fit (GOF) analysis
   # Step 6a: create GOF functions
     # 1:1 plot
-    # RMSE
-    # k-fold cross validation RMSE
+    one.to.one <- function(pred, obs) {
+      qplot(obs, pred, data = df, geom = 'point', color = Field) +
+      geom_abline(slope = 1) +
+      ggtitle("1:1 Plot of Observed and Model Predicted Values") +
+      xlab(expression(Observed~N~mg~kg^{-1})) +
+      ylab(expression(Predicted~N~mg~kg^{-1})) +
+      theme(plot.title = element_text(hjust = 0.5))
+    }
+    # RMSE - not needed, as caret includes this fxn
+    # repeated k-folds cross validation RMSE fxn
+    kfold <- function(df, 
+                      best.model,
+                      model.method="lm",
+                      folds= 10,
+                      repeats=1000) {
+     # Set seed for reproducibility
+       set.seed(123)
+     # Set up repeated k-fold cross validation paremeters
+       train.control = trainControl(method = "repeatedcv",
+                                    number = folds,
+                                    repeats = repeats)
+     # Pass CV parameters to train function in caret
+       model = train(best.model$formula,
+                     data = df,
+                     method = model.method,
+                     trControl = train.control)
+     # Summarize and print the results
+       print(model)
+    }
   # Step 6b: GOF analysis for linear regression
   # Step 6c: GOF analysis for multiple regression
   # Step 6d: GOF analysis for non-linear regression

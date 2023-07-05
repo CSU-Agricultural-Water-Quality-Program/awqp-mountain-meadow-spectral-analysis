@@ -13,10 +13,13 @@
  # Step 5: Regression model creation
  # Step 6: Model goodness of fit analysis
  # Step 7: Model selection, final prediction, and data export
+ # Step 8: use final model to interpolate N status across the study area
+ # Step 9: export final interpolated data
 
 # Step 1: Import libraries
 package.list <- c("dplyr",
-                  "ggplot2"
+                  "ggplot2",
+                  "GGally"
                   )
 packageLoad <- function(packages){
   for (i in packages) {
@@ -34,11 +37,33 @@ packageLoad(package.list)
  data <- read.csv(file.path,
                   header = TRUE,
                   sep = ",",
-                  na.strings = c("NA", " ", "")
+                  na.strings = c("N/A", " ", "")
                   )
 
 # Step 3: Data cleaning
+ clean.df <- data
+
 # Step 4: Data exploration via ggplot2 and other methods
+ # Scatterplot and Pearson's R correlation matrix
+   ggpairs(clean.df)
+
 # Step 5: Regression model creation
-# Step 6: Model goodness of fit analysis
-# Step 7: Model selection, final prediction, and data export
+  # Step 5a: Linear regression
+  # Step 5b: Multiple regession
+  # Step 5c: Non-linear regression
+
+# Step 6: Model goodness of fit (GOF) analysis
+  # Step 6a: create GOF functions
+    # 1:1 plot
+    # RMSE
+    # k-fold cross validation RMSE
+  # Step 6b: GOF analysis for linear regression
+  # Step 6c: GOF analysis for multiple regression
+  # Step 6d: GOF analysis for non-linear regression
+# Step 7: Model selection
+  # Step 7a: Faceted 1:1 plots
+  # Step 7b: RMSE and CV-RMSE table
+
+# Step 8: use final model to interpolate N status across the study area
+
+# Step 9: export final interpolated data

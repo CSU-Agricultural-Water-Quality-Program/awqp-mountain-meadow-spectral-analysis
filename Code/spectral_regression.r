@@ -57,7 +57,7 @@ packageLoad(package.list)
 # Step 4: Data exploration via ggplot2 and other methods
  # Scatterplot and Pearson's R correlation matrix
    ggpairs(clean.df)
-#hi
+
    
    
 # Step 5: Regression model creation

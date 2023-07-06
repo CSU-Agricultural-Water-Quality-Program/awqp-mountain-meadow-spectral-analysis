@@ -3,7 +3,7 @@
 
 # Created by A.J. Brown
 # Date created: 5 July 2023
-# Date last modified: 5 July 2023
+# Date last modified: 6 July 2023
 
 # Script work flow:
  # Step 1: Import libraries
@@ -30,6 +30,7 @@ packageLoad <- function(packages){
     }
   }
 }
+
 packageLoad(package.list)
 
 # Step 2: Import data
@@ -61,7 +62,7 @@ packageLoad(package.list)
   # Set dependent variable for prediction (uncomment for each model)
     clean.df$N <- clean.df$NO3_D1_ppm # soil NO3, ppm
     #clean.df$N <- clean.df$N_kg.ha.1 # plant N, kg/ha
-    #clean.df$N <- clean.df$N_kg.ha.1 # plant biomass, g/ft^2?
+    #clean.df$N <- clean.df$kg.ha.1 # plant biomass, g/ft^2?
   # Step 5a: Linear regression
     lm.mdl <- lm(N~NDRE, data=clean.df)
     summary(lm.mdl)
@@ -94,7 +95,7 @@ packageLoad(package.list)
   # Step 6a: create GOF functions
     # 1:1 plot
     oneToOne <- function(pred, obs, data) {
-      ggplot(data=data, aes(pred, obs)) +
+      ggplot(data = data, aes(pred, obs)) +
       geom_point() +
       geom_abline(slope = 1) +
       ggtitle("1:1 Plot of Observed and Model Predicted Values") +
@@ -109,20 +110,20 @@ packageLoad(package.list)
                       model.method="lm",
                       folds = 10,
                       repeats = 1000) {
-     # Set seed for reproducibility
-       set.seed(123)
-     # Set up repeated k-fold cross validation paremeters
-       train.control = trainControl(method = "repeatedcv",
-                                    number = folds,
-                                    repeats = repeats)
-     # Pass CV parameters to train function in caret
-       model = train(best.model$formula,
-                     data = df,
-                     method = model.method,
-                     trControl = train.control
-                    )
-     # Summarize and print the results
-       print(model)
+        # Set seed for reproducibility
+          set.seed(123)
+        # Set up repeated k-fold cross validation paremeters
+          train.control = trainControl(method = "repeatedcv",
+                                      number = folds,
+                                      repeats = repeats)
+        # Pass CV parameters to train function in caret
+          model = train(best.model$formula,
+                      data = df,
+                      method = model.method,
+                      trControl = train.control
+                      )
+        # Summarize and print the results
+          print(model)
     }
   # Step 6b: GOF analysis for linear regression
     clean.df$lm.pred <- predict(lm.mdl)
@@ -133,6 +134,8 @@ packageLoad(package.list)
   # Step 6c: GOF analysis for multiple regression
     clean.df$mult.pred <- predict(mult.mdl)
     oneToOne(clean.df$mult.pred, clean.df$N, data = clean.df)
+    mult.rmse <- RMSE(clean.df$mult.pred, clean.df$N)
+    print(paste("RMSE (mg/kg):", mult.rmse))
   # Step 6d: GOF analysis for non-linear regression
 # Step 7: Model selection
   # Step 7a: Faceted 1:1 plots

@@ -5,8 +5,6 @@
 # Date created: 5 July 2023
 # Date last modified: 6 July 2023
 
-#can i commit straight from VS Code?
-
 # Script work flow:
  # Step 1: Import libraries
  # Step 2: Import data

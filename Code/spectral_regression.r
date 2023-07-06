@@ -119,7 +119,8 @@ packageLoad(package.list)
        model = train(best.model$formula,
                      data = df,
                      method = model.method,
-                     trControl = train.control)
+                     trControl = train.control
+                    )
      # Summarize and print the results
        print(model)
     }
@@ -127,6 +128,7 @@ packageLoad(package.list)
     clean.df$lm.pred <- predict(lm.mdl)
     oneToOne(clean.df$lm.pred, clean.df$N, data = clean.df)
     lm.rmse <- RMSE(clean.df$lm.pred, clean.df$N)
+    print(paste("RMSE (mg/kg):", lm.rmse))
     kFold(clean.df, lm.mdl)
   # Step 6c: GOF analysis for multiple regression
     clean.df$mult.pred <- predict(mult.mdl)

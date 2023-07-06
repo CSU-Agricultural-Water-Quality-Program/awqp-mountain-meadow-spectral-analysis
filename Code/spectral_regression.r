@@ -33,31 +33,69 @@ packageLoad <- function(packages){
 packageLoad(package.list)
 
 # Step 2: Import data
- # Import data from .csv file
- file.path <- "../Example Data/Final Data.csv"
- data <- read.csv(file.path,
+ # Step 2a: Import calibration data from .csv file
+   cal.file.path <- "./Example Data/Calibration Data.csv"
+   cal.data <- read.csv(cal.file.path,
                   header = TRUE,
                   sep = ",",
                   na.strings = c("N/A", " ", "")
                   )
-
-# Step 3: Data cleaning
- clean.df <- data
-
+ # Step 2b: Import interpolation data from .csv file
+   int.file.path <- "./Example Data/Interpolation Data.csv"
+   int.data <- read.csv(int.file.path,
+                       header = TRUE,
+                       sep = ",",
+                       na.strings = c("N/A", " ", "")
+                       )
+# Step 3: Data cleaning (if needed)
+  colnames(cal.data)
+  # Step 3a: Remove columns not needed for analysis
+    clean.df <- cal.data %>%
+      select(c(ID, NDVI, NDRE, NO3_D1_ppm))
+    colnames(clean.df)
 # Step 4: Data exploration via ggplot2 and other methods
  # Scatterplot and Pearson's R correlation matrix
    ggpairs(clean.df)
 
 # Step 5: Regression model creation
+  # Set dependent variable for prediction (uncomment for each model)
+    clean.df$N <- clean.df$NO3_D1_ppm # soil NO3, ppm
+    #clean.df$N <- clean.df$N_kg.ha.1 # plant N, kg/ha
+    #clean.df$N <- clean.df$N_kg.ha.1 # plant biomass, g/ft^2?
   # Step 5a: Linear regression
+    lm.mdl <- lm(N~NDRE, data=clean.df)
+    summary(lm.mdl)
+    # Confidence Intervals
+    confint(lm.mdl, level = 0.95)
+    # Diagnostic plots
+    par(mfrow=c(2,2))
+    plot(lm.mdl)
+    # Visualize model fit
+    ggplot(data=clean.df, aes(NDRE, N)) +
+      geom_point() +
+      geom_smooth(method='lm') +
+      ggtitle("Linear Regression Model") +
+      xlab(expression(NDRE)) +
+      ylab(expression(N~mg~kg^{-1})) +
+      theme(plot.title = element_text(hjust = 0.5)) +
+      theme_bw()
+
   # Step 5b: Multiple regession
+    mult.mdl <- lm(N~NDRE*NDVI, data=clean.df)
+    summary(mult.mdl)
+    # Confidence Intervals
+    confint(mult.mdl, level = 0.95)
+    # Diagnostic plots
+    par(mfrow=c(2,2))
+    plot(mult.mdl)
   # Step 5c: Non-linear regression
 
 # Step 6: Model goodness of fit (GOF) analysis
   # Step 6a: create GOF functions
     # 1:1 plot
-    one.to.one <- function(pred, obs) {
-      qplot(obs, pred, data = df, geom = 'point', color = Field) +
+    oneToOne <- function(pred, obs, data) {
+      ggplot(data=data, aes(pred, obs)) +
+      geom_point() +
       geom_abline(slope = 1) +
       ggtitle("1:1 Plot of Observed and Model Predicted Values") +
       xlab(expression(Observed~N~mg~kg^{-1})) +
@@ -66,11 +104,11 @@ packageLoad(package.list)
     }
     # RMSE - not needed, as caret includes this fxn
     # repeated k-folds cross validation RMSE fxn
-    kfold <- function(df, 
+    kFold <- function(df,
                       best.model,
                       model.method="lm",
-                      folds= 10,
-                      repeats=1000) {
+                      folds = 10,
+                      repeats = 1000) {
      # Set seed for reproducibility
        set.seed(123)
      # Set up repeated k-fold cross validation paremeters
@@ -86,7 +124,13 @@ packageLoad(package.list)
        print(model)
     }
   # Step 6b: GOF analysis for linear regression
+    clean.df$lm.pred <- predict(lm.mdl)
+    oneToOne(clean.df$lm.pred, clean.df$N, data = clean.df)
+    lm.rmse <- RMSE(clean.df$lm.pred, clean.df$N)
+    kFold(clean.df, lm.mdl)
   # Step 6c: GOF analysis for multiple regression
+    clean.df$mult.pred <- predict(mult.mdl)
+    oneToOne(clean.df$mult.pred, clean.df$N, data = clean.df)
   # Step 6d: GOF analysis for non-linear regression
 # Step 7: Model selection
   # Step 7a: Faceted 1:1 plots

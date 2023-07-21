@@ -144,6 +144,21 @@ packageLoad(package.list)
     log.rmse <- RMSE(clean.df$log.pred, clean.df$N)
     print(paste("RMSE (mg/kg):", log.rmse))
     
+ #NlS non linear model 
+    library(minpack.lm)
+    library(ggplot2)
+    x<-c(clean.df$NDRE)
+    y<-c(clean.df$N)
+    
+    fit <- nls(y ~ a * exp(b * x))
+    summary(fit)
+    ggplot(data.frame(x, y), aes(x, y)) +
+      geom_point() +
+      geom_line(aes(x, predict(fit, newdata = clean.df)))+
+      ggtitle("Exponential Regression") +
+      xlab("NDRE")+
+      ylab("N")
+    
 # Step 7: Model selection
   # Step 7a: Faceted 1:1 plots
   # Step 7b: RMSE and CV-RMSE table

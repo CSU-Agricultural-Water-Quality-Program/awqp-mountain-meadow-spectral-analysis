@@ -139,10 +139,10 @@ packageLoad(package.list)
     mult.rmse <- RMSE(clean.df$mult.pred, clean.df$N)
     print(paste("RMSE (mg/kg):", mult.rmse))
   # Step 6d: GOF analysis for non-linear regression
-    clean.df$log.pred <- predict(log.mdl)
-    oneToOne(clean.df$log.pred, clean.df$N, data = clean.df)
-    log.rmse <- RMSE(clean.df$log.pred, clean.df$N)
-    print(paste("RMSE (mg/kg):", log.rmse))
+    #clean.df$log.pred <- predict(log.mdl)
+    #oneToOne(clean.df$log.pred, clean.df$N, data = clean.df)
+    #log.rmse <- RMSE(clean.df$log.pred, clean.df$N)
+    #print(paste("RMSE (mg/kg):", log.rmse))
     
  #NlS non linear model 
     library(minpack.lm)

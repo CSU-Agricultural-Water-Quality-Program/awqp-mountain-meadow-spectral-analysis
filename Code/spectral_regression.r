@@ -138,6 +138,7 @@ packageLoad(package.list)
     oneToOne(clean.df$mult.pred, clean.df$N, data = clean.df)
     mult.rmse <- RMSE(clean.df$mult.pred, clean.df$N)
     print(paste("RMSE (mg/kg):", mult.rmse))
+    kFold(clean.df, mult.mdl)
   # Step 6d: GOF analysis for non-linear regression
     #clean.df$log.pred <- predict(log.mdl)
     #oneToOne(clean.df$log.pred, clean.df$N, data = clean.df)

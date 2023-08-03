@@ -146,21 +146,23 @@ packageLoad(package.list)
     #print(paste("RMSE (mg/kg):", log.rmse))
     
  #NlS non linear model 
-    library(minpack.lm)
+    
+    library(dplyr)
     library(ggplot2)
     x<-c(clean.df$NDRE)
     y<-c(clean.df$N)
     
-    fit <- nls(y ~ a * exp(b * x))
-    summary(fit)
+    non_linear_model <- function(int.data) {
+      nls(y ~ a * sin(b * x) + c, data = data, start = list(a = 1, b = 1, c = 1))}
+    
     ggplot(data.frame(x, y), aes(x, y)) +
       geom_point() +
       geom_line(aes(x, predict(fit, newdata = clean.df)))+
       ggtitle("Exponential Regression") +
       xlab("NDRE")+
-      ylab("N")
+      ylab("Soil N")
     
-# Step 7: Model selection
+  # Step 7: Model selection
   # Step 7a: Faceted 1:1 plots
   # Step 7b: RMSE and CV-RMSE table
 

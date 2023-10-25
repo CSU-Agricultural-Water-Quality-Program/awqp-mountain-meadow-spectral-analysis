@@ -49,24 +49,34 @@ packageLoad(package.list)
                        na.strings = c("N/A", " ", "")
                        )
 # Step 3: Data cleaning (if needed)
-  colnames(cal.data)
-  # Step 3a: Remove columns not needed for analysis
-    clean.df <- cal.data %>%
-      select(c(ID, NDVI, NDRE, NO3_D1_ppm))
-    colnames(clean.df)
-# Step 4: Data exploration via ggplot2 and other methods
+  clean.df <- cal.data %>%
+    mutate(N_lbs = N.Content..mg./453592.37,
+           N_lbs_ac = N_lbs*43560,
+           N_perc = N.Content....
+           ) %>%
+    select(Date, NDVI, NDRE, Red, Green, Red.Edge, NIR, NO3_D1_ppm, N_lbs, N_lbs_ac, N_perc
+           ) %>%
+    filter(Date == '7/10/2023')
+
+# Step 4: Data exploration via ggplot2 and other methods\
+  # Step 4a: Remove columns not needed for analysis
+  sub.df <- clean.df %>%
+    filter(Date == '7/10/2023') %>%
+    #select(c(Red, Green, Red.Edge, NIR, N.Content....))
+    select(c(NDVI, NDRE, N_perc))
+  colnames(sub.df)
  # Scatterplot and Pearson's R correlation matrix
-   ggpairs(clean.df)
+   ggpairs(sub.df)
 
    
    
 # Step 5: Regression model creation
   # Set dependent variable for prediction (uncomment for each model)
-    clean.df$N <- clean.df$NO3_D1_ppm # soil NO3, ppm
+    clean.df$N <- clean.df$N_perc # Plant N (mg/mg)
     #clean.df$N <- clean.df$N_kg.ha.1 # plant N, kg/ha
     #clean.df$N <- clean.df$kg.ha.1 # plant biomass, g/ft^2?
   # Step 5a: Linear regression
-    lm.mdl <- lm(N~NDRE, data=clean.df)
+    lm.mdl <- lm(N~NDVI, data=clean.df)
     summary(lm.mdl)
     # Confidence Intervals
     confint(lm.mdl, level = 0.95)
@@ -74,17 +84,18 @@ packageLoad(package.list)
     par(mfrow=c(2,2))
     plot(lm.mdl)
     # Visualize model fit
-    ggplot(data=clean.df, aes(NDRE, N)) +
+    ggplot(data=clean.df, aes(NDVI, N)) +
       geom_point() +
       geom_smooth(method='lm') +
       ggtitle("Linear Regression Model") +
-      xlab(expression(NDRE)) +
-      ylab(expression(N~mg~kg^{-1})) +
+      xlab(expression(NDVI)) +
+      ylab("N (mg/mg)") +
       theme(plot.title = element_text(hjust = 0.5)) +
       theme_bw()
 
   # Step 5b: Multiple regession
-    mult.mdl <- lm(N~NDRE*NDVI, data=clean.df)
+    # We are gonna do the stepwise mult regression here
+    mult.mdl <- lm(N~NDVI*Green, data=clean.df)
     summary(mult.mdl)
     # Confidence Intervals
     confint(mult.mdl, level = 0.95)

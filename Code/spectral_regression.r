@@ -35,14 +35,14 @@ packageLoad(package.list)
 
 # Step 2: Import data
  # Step 2a: Import calibration data from .csv file
-   cal.file.path <- "./Yampa 2023 Data/Final Sample points with NDVI and NDRE.csv"
+   cal.file.path <- "../Yampa 2023 Data/Final Sample points with NDVI and NDRE.csv"
    cal.data <- read.csv(cal.file.path,
                   header = TRUE,
                   sep = ",",
                   na.strings = c("N/A", " ", "")
                   )
  # Step 2b: Import interpolation data from .csv file
-   int.file.path <- "./Yampa 2023 Data/ndvi_ndre_utm_5m.csv"
+   int.file.path <- "../Yampa 2023 Data/ndvi_ndre_utm_5m.csv"
    int.data <- read.csv(int.file.path,
                        header = TRUE,
                        sep = ",",
@@ -52,7 +52,7 @@ packageLoad(package.list)
   clean.df <- cal.data %>%
     mutate(N_lbs = N.Content..mg./453592.37,
            N_lbs_ac = N_lbs*43560,
-           N_perc = N.Content....
+           N_perc = N.Content....*100
            ) %>%
     select(Date, NDVI, NDRE, Red, Green, Red.Edge, NIR, NO3_D1_ppm, N_lbs, N_lbs_ac, N_perc
            ) %>%
@@ -92,6 +92,25 @@ packageLoad(package.list)
       ylab("N (mg/mg)") +
       theme(plot.title = element_text(hjust = 0.5)) +
       theme_bw()
+    
+    # Step 5a: Linear regression
+    lm.mdl.noint <- lm(N~NDVI-1, data=clean.df)
+    summary(lm.mdl.noint)
+    # Confidence Intervals
+    confint(lm.mdl.noint, level = 0.95)
+    # Diagnostic plots
+    par(mfrow=c(2,2))
+    plot(lm.mdl.noint)
+    # Visualize model fit
+    # ask chatgpt to make this a no-intercept visualization
+    ggplot(data=clean.df, aes(NDVI, N)) +
+      geom_point() +
+      geom_smooth(method='lm') +
+      ggtitle("Linear Regression Model") +
+      xlab(expression(NDVI)) +
+      ylab("N (mg/mg)") +
+      theme(plot.title = element_text(hjust = 0.5)) +
+      theme_bw()
 
   # Step 5b: Multiple regession
     # We are gonna do the stepwise mult regression here
@@ -103,76 +122,45 @@ packageLoad(package.list)
     par(mfrow=c(2,2))
     plot(mult.mdl)
   # Step 5c: Non-linear regression
+    
+    
+# notes on getting eq. coefficients
+    coef(lm.mdl)
+    coef(lm.mdl.noint)
+    coef(mult.mdl)
+    
+    # these give you the Beta coefficients for each input variable
+    # N% = B0 + B1*NDVI
+    # N% = B1*NDVI
+    # N% = B0 + B1*NDVI + B2*Green + B3*NDVI*Green
 
 # Step 6: Model goodness of fit (GOF) analysis
   # Step 6a: create GOF functions
     # 1:1 plot
+    # make this look better, Jake
     oneToOne <- function(pred, obs, data) {
       ggplot(data = data, aes(pred, obs)) +
       geom_point() +
-      geom_abline(slope = 1) +
+      geom_abline(slope = 1, linetype = 'dashed') +
       ggtitle("1:1 Plot of Observed and Model Predicted Values") +
       xlab(expression(Observed~N~mg~kg^{-1})) +
       ylab(expression(Predicted~N~mg~kg^{-1})) +
-      theme(plot.title = element_text(hjust = 0.5))
+      theme(plot.title = element_text(hjust = 0.5)) +
+      coord_fixed(ratio = 1)
     }
-    # RMSE - not needed, as caret includes this fxn
-    # repeated k-folds cross validation RMSE fxn
-    kFold <- function(df,
-                      best.model,
-                      model.method="lm",
-                      folds = 10,
-                      repeats = 1000) {
-        # Set seed for reproducibility
-          set.seed(123)
-        # Set up repeated k-fold cross validation paremeters
-          train.control = trainControl(method = "repeatedcv",
-                                      number = folds,
-                                      repeats = repeats)
-        # Pass CV parameters to train function in caret
-          model = train(best.model$formula,
-                      data = df,
-                      method = model.method,
-                      trControl = train.control
-                      )
-        # Summarize and print the results
-          print(model)
-    }
+    
   # Step 6b: GOF analysis for linear regression
     clean.df$lm.pred <- predict(lm.mdl)
     oneToOne(clean.df$lm.pred, clean.df$N, data = clean.df)
     lm.rmse <- RMSE(clean.df$lm.pred, clean.df$N)
-    print(paste("RMSE (mg/kg):", lm.rmse))
-    kFold(clean.df, lm.mdl)
+    print(paste("RMSE (%):", lm.rmse))
+
   # Step 6c: GOF analysis for multiple regression
     clean.df$mult.pred <- predict(mult.mdl)
     oneToOne(clean.df$mult.pred, clean.df$N, data = clean.df)
     mult.rmse <- RMSE(clean.df$mult.pred, clean.df$N)
-    print(paste("RMSE (mg/kg):", mult.rmse))
-    kFold(clean.df, mult.mdl)
-  # Step 6d: GOF analysis for non-linear regression
-    #clean.df$log.pred <- predict(log.mdl)
-    #oneToOne(clean.df$log.pred, clean.df$N, data = clean.df)
-    #log.rmse <- RMSE(clean.df$log.pred, clean.df$N)
-    #print(paste("RMSE (mg/kg):", log.rmse))
-    
- #NlS non linear model 
-    
-    library(dplyr)
-    library(ggplot2)
-    x<-c(clean.df$NDRE)
-    y<-c(clean.df$N)
-    
-    non_linear_model <- function(int.data) {
-      nls(y ~ a * sin(b * x) + c, data = data, start = list(a = 1, b = 1, c = 1))}
-    
-    ggplot(data.frame(x, y), aes(x, y)) +
-      geom_point() +
-      geom_line(aes(x, predict(fit, newdata = clean.df)))+
-      ggtitle("Exponential Regression") +
-      xlab("NDRE")+
-      ylab("Soil N")
-    
+    print(paste("RMSE (%):", mult.rmse))
+
   # Step 7: Model selection
   # Step 7a: Faceted 1:1 plots
   # Step 7b: RMSE and CV-RMSE table

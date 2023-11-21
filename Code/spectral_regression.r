@@ -114,7 +114,7 @@ packageLoad(package.list)
 
   # Step 5b: Multiple regession
     # We are gonna do the stepwise mult regression here
-    mult.mdl <- lm(N~NDVI*Green, data=clean.df)
+    mult.mdl <- lm(N~((NIR/Red.Edge)-1), data=clean.df)
     summary(mult.mdl)
     # Confidence Intervals
     confint(mult.mdl, level = 0.95)

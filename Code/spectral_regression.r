@@ -35,14 +35,14 @@ packageLoad(package.list)
 
 # Step 2: Import data
  # Step 2a: Import calibration data from .csv file
-   cal.file.path <- "../Yampa 2023 Data/Final Sample points with NDVI and NDRE.csv"
+   cal.file.path <- "./Yampa 2023 Data/Final Sample points with NDVI and NDRE.csv"
    cal.data <- read.csv(cal.file.path,
                   header = TRUE,
                   sep = ",",
                   na.strings = c("N/A", " ", "")
                   )
  # Step 2b: Import interpolation data from .csv file
-   int.file.path <- "../Yampa 2023 Data/ndvi_ndre_utm_5m.csv"
+   int.file.path <- "./Yampa 2023 Data/ndvi_ndre_utm_5m.csv"
    int.data <- read.csv(int.file.path,
                        header = TRUE,
                        sep = ",",

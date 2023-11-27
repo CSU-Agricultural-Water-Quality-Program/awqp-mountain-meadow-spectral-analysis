@@ -146,7 +146,7 @@ packageLoad(package.list)
       xlab(expression(Observed~N~mg~kg^{-1})) +
       ylab(expression(Predicted~N~mg~kg^{-1})) +
       theme(plot.title = element_text(hjust = 0.5)) +
-      coord_fixed(ratio = 1)
+      coord_fixed(ratio = 0.5)
     }
     
   # Step 6b: GOF analysis for linear regression

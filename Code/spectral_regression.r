@@ -105,8 +105,8 @@ packageLoad(package.list)
     # ask chatgpt to make this a no-intercept visualization
     ggplot(data=clean.df, aes(NDVI, N)) +
       geom_point() +
-      geom_smooth(method='lm') +
-      ggtitle("Linear Regression Model") +
+      geom_smooth(method='lm', formula = y ~ x - 1) +
+      ggtitle("Linear Regression Model (No Intercept)") +
       xlab(expression(NDVI)) +
       ylab("N (mg/mg)") +
       theme(plot.title = element_text(hjust = 0.5)) +
@@ -138,6 +138,7 @@ packageLoad(package.list)
   # Step 6a: create GOF functions
     # 1:1 plot
     # make this look better, Jake
+    # I tried
     oneToOne <- function(pred, obs, data) {
       ggplot(data = data, aes(pred, obs)) +
       geom_point() +
@@ -146,7 +147,7 @@ packageLoad(package.list)
       xlab(expression(Observed~N~mg~kg^{-1})) +
       ylab(expression(Predicted~N~mg~kg^{-1})) +
       theme(plot.title = element_text(hjust = 0.5)) +
-      coord_fixed(ratio = 0.5)
+      coord_fixed(ratio = 0.75)
     }
     
   # Step 6b: GOF analysis for linear regression
@@ -168,3 +169,5 @@ packageLoad(package.list)
 # Step 8: use final model to interpolate N status across the study area
 
 # Step 9: export final interpolated data
+    
+    

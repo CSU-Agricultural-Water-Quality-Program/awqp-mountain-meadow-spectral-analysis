@@ -20,7 +20,8 @@
 package.list <- c("dplyr",
                   "ggplot2",
                   "GGally",
-                  "caret"
+                  "caret",
+                  "patchwork"
                   )
 packageLoad <- function(packages){
   for (i in packages) {
@@ -114,7 +115,8 @@ packageLoad(package.list)
 
   # Step 5b: Multiple regession
     # We are gonna do the stepwise mult regression here
-    mult.mdl <- lm(N~((NIR/Red.Edge)-1), data=clean.df)
+    clean.df$CIRE <- (clean.df$NIR/clean.df$Red.Edge) - 1
+    mult.mdl <- lm(N~CIRE-1, data=clean.df)
     summary(mult.mdl)
     # Confidence Intervals
     confint(mult.mdl, level = 0.95)
@@ -152,15 +154,17 @@ packageLoad(package.list)
     
   # Step 6b: GOF analysis for linear regression
     clean.df$lm.pred <- predict(lm.mdl)
-    oneToOne(clean.df$lm.pred, clean.df$N, data = clean.df)
+    a <- oneToOne(clean.df$lm.pred, clean.df$N, data = clean.df)
     lm.rmse <- RMSE(clean.df$lm.pred, clean.df$N)
     print(paste("RMSE (%):", lm.rmse))
 
   # Step 6c: GOF analysis for multiple regression
     clean.df$mult.pred <- predict(mult.mdl)
-    oneToOne(clean.df$mult.pred, clean.df$N, data = clean.df)
+    b <- oneToOne(clean.df$mult.pred, clean.df$N, data = clean.df)
     mult.rmse <- RMSE(clean.df$mult.pred, clean.df$N)
     print(paste("RMSE (%):", mult.rmse))
+    
+    a + b 
 
   # Step 7: Model selection
   # Step 7a: Faceted 1:1 plots
